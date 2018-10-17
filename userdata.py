@@ -2,10 +2,12 @@ import requests
 import json
 import sys
 import os
+import tokenhandler
 
 cid = os.environ['CLIENT_ID']
 csecret = os.environ['CLIENT_SECRET']
-
+username = os.environ['username']
+passwd = os.environ['passwd']
 
 class Member():
 
@@ -20,10 +22,14 @@ class Member():
 		self.repos = []
 		self.nRepos = 0
 		self.totalCommits = 0
+		self.TOKEN = ""
+		self.T_URL = ""
 
 	def fetch(self):
+		self.makeToken()
 		self.getUser()
 		self.getAllCommits()
+		self.delToken()
 
 	def printData(self):
 		print("Name :", self.name)
@@ -35,10 +41,18 @@ class Member():
 		print("Following :", self.following)
 		print("Total Commits :", self.totalCommits)
 
+	def makeToken(self):
+		t_data = tokenhandler.create(username, passwd, cid, csecret)
+		if t_data:
+			self.T_URL = t_data['url']
+			self.TOKEN = t_data['token']
+
+	def delToken(self):
+		return tokenhandler.delete(username, passwd, self.T_URL)
+
 	def getUser(self):
 		payload = {
-			"client_id": cid,
-			"client_secret": csecret
+			"access_token": self.TOKEN
 		}
 
 		USER_API = "https://api.github.com/users/{}".format(self.username)
@@ -68,8 +82,7 @@ class Member():
 
 	def getRepoData(self, repo):
 		payload = {
-			"client_id": cid,
-			"client_secret": csecret
+			"access_token": self.TOKEN
 		}
 
 		STATS_URL = "https://api.github.com/repos/{}/{}/stats/contributors".format(self.username, repo)
