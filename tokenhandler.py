@@ -21,4 +21,5 @@ def create(username, password, cid, csecret):
 
 def delete(username, password, url):
 	response = requests.delete(url, auth=(username, password))
+	print("Deleting token")
 	return (response.status_code == 204)
